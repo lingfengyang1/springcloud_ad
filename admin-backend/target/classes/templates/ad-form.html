@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${ad.id == null ? '添加广告' : '编辑广告'}"></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .btn-secondary {
+            background-color: #ccc;
+            color: #333;
+        }
+        .image-preview {
+            margin-top: 10px;
+            max-width: 300px;
+            height: auto;
+            display: block;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 th:text="${ad.id == null ? '添加新广告' : '编辑广告'}"></h1>
+        
+        <!-- 消息提示 -->
+        <div th:if="${message}" class="message" th:text="${message}"></div>
+        
+        <!-- 广告表单 -->
+        <form th:action="@{${action}}" method="post" enctype="multipart/form-data">
+            <!-- ID字段（编辑时需要） -->
+            <input type="hidden" th:field="${ad.id}">
+            
+            <div class="form-group">
+                <label for="name">广告名称 <span style="color: red;">*</span></label>
+                <input type="text" id="name" name="name" th:field="${ad.name}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="categoryId">所属分类 <span style="color: red;">*</span></label>
+                <select id="categoryId" name="categoryId" th:field="${ad.categoryId}" required>
+                    <option value="">请选择分类</option>
+                    <option th:each="category : ${categories}" 
+                            th:value="${category.id}" 
+                            th:text="${category.name}">
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="file">广告图片 <span th:if="${ad.id == null}" style="color: red;">*</span></label>
+                <input type="file" id="file" name="file" accept="image/*">
+                <div th:if="${ad.id != null and ad.imageUrl != null}">
+                    <img th:src="${@environment.getProperty('spring.fdfs.web-server-url') + ad.imageUrl}" 
+                         class="image-preview" th:alt="${ad.name}">
+                    <p>如不更换图片，请保持为空</p>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">广告描述</label>
+                <textarea id="description" name="description" th:field="${ad.description}"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">状态</label>
+                <select id="status" name="status" th:field="${ad.status}">
+                    <option value="1">启用</option>
+                    <option value="0">禁用</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn">保存</button>
+                <a href="/ads" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

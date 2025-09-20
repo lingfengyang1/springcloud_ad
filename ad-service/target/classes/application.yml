@@ -1,0 +1,47 @@
+server:
+  port: 8081
+
+spring:
+  servlet:
+    multipart:
+      enabled: true  # 开启文件上传支持
+      max-file-size: ${file.upload.max-file-size}  # 单个文件大小限制（引用上方配置）
+      max-request-size: ${file.upload.max-request-size}  # 单次请求大小限制（引用上方配置）
+      file-size-threshold: 0  # 文件大小阈值，超过则写入磁盘（0 表示所有文件直接写入磁盘）
+  application:
+    name: ad-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ad_system?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+  # FastDFS配置
+  fdfs:
+    so-timeout: 1501
+    connect-timeout: 601
+    thumb-image:
+      width: 150
+      height: 150
+    tracker-list:
+      - 127.0.0.1:22122  # FastDFS跟踪器地址
+file:
+  upload:
+    # 正确的 Windows 绝对路径格式（二选一）
+    base-path: C:/home/springboot/upload/  # 正斜杠（推荐，避免转义问题）
+    # 或 base-path: C:\\home\\springboot\\upload\\  # 双反斜杠（需转义）
+    allowed-types: jpg,png,gif,pdf,doc,docx,xls,xlsx
+    max-file-size: 10MB
+    max-request-size: 50MB
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true  # 注册时使用ip地址
+
+mybatis:
+  mapper-locations: classpath:mybatis/*.xml
+  type-aliases-package: com.example.ad.entity
+  configuration:
+    map-underscore-to-camel-case: true  # 开启驼峰命名转换

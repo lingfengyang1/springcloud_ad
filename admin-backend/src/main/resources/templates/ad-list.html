@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>广告管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .actions {
+            margin: 20px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #2196F3;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .image-preview {
+            width: 100px;
+            height: auto;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .filter-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .filter-form select, .filter-form button {
+            padding: 6px 12px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>广告管理</h1>
+
+    <!-- 消息提示 -->
+    <div th:if="${message}" class="message" th:text="${message}"></div>
+
+    <!-- 筛选表单 -->
+    <div class="filter-form">
+        <form th:action="@{/ads}" method="get">
+            <select name="categoryId" onchange="this.form.submit()">
+                <option value="">所有分类</option>
+                <option th:each="category : ${categories}"
+                        th:value="${category.id}"
+                        th:text="${category.name}"
+                        th:selected="${selectedCategoryId != null and selectedCategoryId == category.id}">
+                </option>
+            </select>
+            <a href="/ads" class="btn">清除筛选</a>
+        </form>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="actions">
+        <a href="/ads/add" class="btn btn-primary">添加新广告</a>
+    </div>
+
+    <!-- 广告列表 -->
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>广告名称</th>
+            <th>所属分类</th>
+            <th>图片预览</th>
+            <th>状态</th>
+            <th>创建时间</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- 循环渲染广告列表 -->
+        <tr th:each="ad : ${ads}">
+            <td th:text="${ad.id}"></td>
+            <td th:text="${ad.name}"></td>
+            <!-- 彻底修复：用“循环+变量标记”实现分类匹配，无任何复杂表达式 -->
+            <td>
+                <!-- 1. 定义一个变量存储匹配到的分类名称，默认空 -->
+                <th:block th:with="matchedCategoryName=''">
+                    <!-- 2. 循环所有分类，匹配则更新变量值 -->
+                    <th:block th:each="category : ${categories}">
+                        <th:block th:if="${category.id != null and ad.categoryId != null and category.id == ad.categoryId}">
+                            <th:block th:with="matchedCategoryName=${category.name}"></th:block>
+                        </th:block>
+                    </th:block>
+                    <!-- 3. 显示变量值（有匹配则显示名称，无匹配则显示“未分类”） -->
+                    <span th:text="${matchedCategoryName != '' ? matchedCategoryName : '未分类'}"></span>
+                </th:block>
+            </td>
+            <td>
+                <!-- 补充 @{} 拼接上下文路径，避免路径错误 -->
+                <img th:src="@{${ad.imageUrl}}"
+                     class="image-preview"
+                th:onerror="this.src='/static/images/default.png'" /> <!-- 可选：加载失败显示默认图 -->
+            </td>
+            <td th:text="${ad.status == 1 ? '启用' : '禁用'}"></td>
+            <td th:text="${ad.createTime}"></td>
+            <td>
+                <a th:href="@{/ads/edit/{id}(id=${ad.id})}" class="btn">编辑</a>
+                <a th:href="@{/ads/delete/{id}(id=${ad.id})}" class="btn btn-danger"
+                   onclick="return confirm('确定要删除吗？')">删除</a>
+            </td>
+        </tr>
+        <!-- 无广告数据时显示 -->
+        <tr th:if="${ads.isEmpty()}">
+            <td colspan="7" style="text-align: center;">暂无广告数据</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
